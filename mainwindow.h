@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QTimer>
 
+class QWebEngineView;
+
 namespace Ui {
 class MainWindow;
 }
@@ -20,7 +22,12 @@ public:
 
     void saveSettings();
 
+signals:
+    void sigLoadUrl(const QString &);
 private slots:
+
+    void onLoadUrl(const QString &path);
+
     void on_addBtn_clicked();
 
     void slotOpenUrls();
@@ -41,6 +48,7 @@ private:
     QTimer* m_timer{nullptr};
     int m_timeMSec = 60000 ;//1min
     bool isStop = false;
+    QList <QWebEngineView *>m_listWeb;
 };
 
 #endif // MAINWINDOW_H

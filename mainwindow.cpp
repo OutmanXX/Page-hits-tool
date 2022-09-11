@@ -5,7 +5,7 @@
 #include <QThread>
 #include <QProcess>
 #include <QDebug>
-
+#include <QtWebEngineWidgets/QWebEngineView>
 #include "configsetter.h"
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_timer, &QTimer::timeout, this, &MainWindow::slotOpenUrls);
 
     saveSettings();
+    connect(this,&MainWindow::sigLoadUrl,this,&MainWindow::onLoadUrl);
 }
 
 MainWindow::~MainWindow()
@@ -55,6 +56,22 @@ void MainWindow::saveSettings()
     }
 }
 
+void MainWindow::onLoadUrl(const QString &path)
+{
+    if(m_listWeb.count()>10){
+        for(QWebEngineView *tmp :m_listWeb){
+            delete tmp;
+            tmp = nullptr;
+        }
+        m_listWeb.clear();
+    }
+    QWebEngineView * web =new QWebEngineView();
+    web->load(QUrl(path));
+    web->setMinimumSize(100,20);
+    m_listWeb.push_back(web);
+    ui->webLayout->addWidget(web);
+}
+
 void MainWindow::on_addBtn_clicked()
 {
     m_openUrls << ui->addEdit->text();
@@ -67,8 +84,11 @@ void MainWindow::slotOpenUrls()
     QThread *th = QThread::create([ = ]() {
         for (QString path : m_openUrls){
             if(!isStop){
+//                QDesktopServices::openUrl(QUrl(path));
+//                m_webWidget->load(QUrl(path));
+                emit sigLoadUrl(path);
                 QThread::sleep(2);
-                QDesktopServices::openUrl(QUrl(path));
+
             }
         }
         if(!isStop){
@@ -78,8 +98,9 @@ void MainWindow::slotOpenUrls()
             }
 
         }
-        QProcess::execute("killall chrome");
+//        QProcess::execute("killall chrome");
     });
+
 
     connect(th, &QThread::finished, th, &QObject::deleteLater);
     th->start();
@@ -87,7 +108,7 @@ void MainWindow::slotOpenUrls()
 
 void MainWindow::on_deleteBtn_clicked()
 {
-    if(ui->urlList->currentRow()>0){
+    if(ui->urlList->currentRow()>=0){
         m_openUrls.removeOne(ui->urlList->currentItem()->text());
         ui->urlList->takeItem(ui->urlList->currentRow());
     }
