@@ -58,7 +58,7 @@ void MainWindow::saveSettings()
 
 void MainWindow::onLoadUrl(const QString &path)
 {
-    if(m_listWeb.count()>10){
+    if(m_listWeb.count()>=m_openUrls.count()){
         for(QWebEngineView *tmp :m_listWeb){
             delete tmp;
             tmp = nullptr;
@@ -87,7 +87,7 @@ void MainWindow::slotOpenUrls()
 //                QDesktopServices::openUrl(QUrl(path));
 //                m_webWidget->load(QUrl(path));
                 emit sigLoadUrl(path);
-                QThread::sleep(2);
+//                QThread::sleep(2);
 
             }
         }
